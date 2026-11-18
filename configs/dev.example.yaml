@@ -1,0 +1,11 @@
+# Example only. Use managed identity/approved secret store for credentials.
+environment: development
+fabric:
+  workspace: replace-with-development-workspace
+  lakehouse: replace-with-development-lakehouse
+reporting:
+  default_currency: INR
+  as_of_timezone: Asia/Kolkata
+data:
+  source_mode: synthetic_demo
+  maximum_age_hours: 48

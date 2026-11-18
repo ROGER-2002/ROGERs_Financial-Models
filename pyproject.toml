@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "amc-financial-analytics"
+version = "0.1.0"
+description = "Starter research and portfolio analytics platform for an AMC"
+requires-python = ">=3.11"
+dependencies = [
+  "numpy>=1.26",
+  "pandas>=2.1",
+  "plotly>=5.20",
+  "streamlit>=1.36",
+]
+
+[project.optional-dependencies]
+dev = ["ruff>=0.5", "pytest>=8"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]
