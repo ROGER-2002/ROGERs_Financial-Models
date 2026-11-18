@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from amc_analytics.metrics import summarize_returns
+from financial_analytics.metrics import summarize_returns
 
 
 def test_constant_positive_returns_have_expected_cagr_and_no_drawdown() -> None:

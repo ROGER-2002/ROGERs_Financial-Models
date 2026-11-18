@@ -5,11 +5,11 @@ import io
 import plotly.express as px
 import streamlit as st
 
-from amc_analytics.demo_data import load_demo_data
-from amc_analytics.metrics import summarize_returns
+from financial_analytics.demo_data import load_demo_data
+from financial_analytics.metrics import summarize_returns
 
 
-st.set_page_config(page_title="AMC Analytics | Peer Research", page_icon="📈", layout="wide")
+st.set_page_config(page_title="Financial Analytics | Peer Research", page_icon="📈", layout="wide")
 st.title("Fund peer comparison")
 st.caption("Research prototype · all displayed values are synthetic and for interface demonstration only")
 

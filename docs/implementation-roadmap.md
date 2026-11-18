@@ -60,4 +60,4 @@ Build Streamlit pages for peer research, portfolio risk, scenarios, and model mo
 6. Add portfolio constraints, attribution, scenarios, and optimization.
 7. Add forecasting/ranking models with model governance and production controls.
 
-No prediction model should be presented as reliably accurate without independent out-of-time evidence and ongoing monitoring. Investment decisions remain subject to the AMC's review and governance process.
+No prediction model should be presented as reliably accurate without independent out-of-time evidence and ongoing monitoring. Investment decisions remain subject to the organization's review and governance process.

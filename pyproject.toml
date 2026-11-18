@@ -3,9 +3,9 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "amc-financial-analytics"
+name = "financial-analytics"
 version = "0.1.0"
-description = "Starter research and portfolio analytics platform for an AMC"
+description = "Starter platform for investment research, portfolio risk, and interactive reporting"
 requires-python = ">=3.11"
 dependencies = [
   "numpy>=1.26",

@@ -1,4 +1,4 @@
-# AMC Financial Analytics
+# Financial Analytics
 
 A starter platform for investment research, peer comparison, portfolio risk analysis, and interactive reporting. The repository is designed to grow from a local Streamlit prototype into a governed Microsoft Fabric solution.
 
@@ -16,7 +16,7 @@ The app lets you select a peer category and date range, compare risk and return 
 ## Repository map
 
 - `app.py` — Streamlit user interface.
-- `src/amc_analytics/` — reusable data and financial calculation modules.
+- `src/financial_analytics/` — reusable data and financial calculation modules.
 - `docs/` — architecture, data definitions, and staged implementation roadmap.
 - `configs/` — environment configuration examples; never put secrets here.
 - `notebooks/` — exploratory analysis and Fabric notebook source.

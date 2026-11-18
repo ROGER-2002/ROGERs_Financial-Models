@@ -33,7 +33,7 @@
 
 ## Power BI Free: the practical boundary
 
-Power BI Desktop can be used at no cost to create local reports. The free Power BI service experience is mainly for personal use; collaboration and sharing typically need Pro/PPU unless the content is hosted on qualifying capacity. Therefore, use Desktop as an optional analyst tool, not as the foundation for shared AMC production reporting. The platform's primary user experience remains Streamlit plus generated HTML, as requested.
+Power BI Desktop can be used at no cost to create local reports. The free Power BI service experience is mainly for personal use; collaboration and sharing typically need Pro/PPU unless the content is hosted on qualifying capacity. Therefore, use Desktop as an optional analyst tool, not as the foundation for shared production reporting. The platform's primary user experience remains Streamlit plus generated HTML, as requested.
 
 ## Airflow or Fabric pipelines?
 
@@ -41,7 +41,7 @@ Do not add Airflow automatically just because it is free software. For a Fabric-
 
 ## Data and security rule
 
-Do not commit licensed market data, portfolio holdings, generated client reports, credentials, or secrets to GitHub. Store data in approved governed storage. Use synthetic or specifically approved fixtures in developer machines and CI. Free public hosting services are not suitable for confidential AMC data unless the organization's security team has approved the exact configuration.
+Do not commit licensed market data, portfolio holdings, generated client reports, credentials, or secrets to GitHub. Store data in approved governed storage. Use synthetic or specifically approved fixtures in developer machines and CI. Free public hosting services are not suitable for confidential investment data unless the organization's security team has approved the exact configuration.
 
 ## Cost-conscious HTML delivery
 
