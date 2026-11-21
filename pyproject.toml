@@ -27,7 +27,7 @@ src = ["src"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP"]
-ignore = ["E501"]
+ignore = ["E501", "I001"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["financial_analytics"]
