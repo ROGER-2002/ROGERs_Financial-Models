@@ -10,3 +10,6 @@ data/
 *.parquet
 *.xlsx
 *.csv
+/Input/
+/Master/
+/Output/
