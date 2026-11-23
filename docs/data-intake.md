@@ -2,12 +2,15 @@
 
 Use this guide to prepare your supplied files before connecting them to the analytics modules. The project does not download, scrape, or invent real market data. Keep original files unchanged and retain their source, license, and as-of details.
 
-## 1. Keep source data out of Git
+## 1. Local folder layout and GitHub boundary
 
-- Place incoming files in the local `data/incoming/` folder (it is ignored by Git).
-- Never commit account details, client holdings, licensed files, credentials, or confidential research.
-- Preserve an untouched copy of each source file. Work from a separate copy during cleanup.
-- Record the provider, file name, extraction time, coverage dates, license, and any transformations.
+Keep all real input, master, and generated output files on your local machine:
+
+- `Input/` — original source datasets; keep the provided folder structure and files unchanged.
+- `Master/` — stable security, scheme, benchmark, category, and sector mappings used to join sources.
+- `Output/` — generated reports, model outputs, and backtest results.
+
+These root folders are ignored by Git and are not stored in the GitHub repository. Never commit account details, client holdings, licensed files, credentials, or confidential research. Preserve an untouched copy of each source file; perform cleanup and transformations on separate working copies. Record the provider, file name, extraction time, coverage dates, license, and transformations.
 
 ## 2. Preferred first batch
 
