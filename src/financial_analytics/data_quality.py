@@ -169,6 +169,18 @@ def validate_price_history(
                     )
                 )
             data[column] = series
+            non_positive_price = series.notna() & series.le(0)
+            if column != "close" and non_positive_price.any():
+                errors.append(
+                    DataQualityIssue(
+                        code="non_positive_price",
+                        severity="error",
+                        message=(
+                            f"{int(non_positive_price.sum())} rows have a non-positive {column}."
+                        ),
+                        affected_rows=tuple(data.index[non_positive_price]),
+                    )
+                )
             invalid |= bad_numeric
         bad_ohlc = (
             ~invalid
