@@ -14,7 +14,6 @@ from typing import Any
 
 import pandas as pd
 
-
 NAV_COLUMNS = {
     "Scheme Code": "scheme_code",
     "Scheme Name": "scheme_name",
@@ -105,9 +104,19 @@ def canonicalize_nav_frame(
     ]
     data = _mark_issues(data, rules)
     columns = [
-        "scheme_id", "scheme_code", "scheme_isin", "scheme_name", "category",
-        "plan_type", "nav_date", "nav", "source_file", "source_sheet", "source_row",
-        "quality_issue_codes", "is_valid",
+        "scheme_id",
+        "scheme_code",
+        "scheme_isin",
+        "scheme_name",
+        "category",
+        "plan_type",
+        "nav_date",
+        "nav",
+        "source_file",
+        "source_sheet",
+        "source_row",
+        "quality_issue_codes",
+        "is_valid",
     ]
     return data[columns]
 
@@ -229,7 +238,9 @@ def build_local_outputs(input_dir: Path, output_dir: Path) -> dict[str, Path]:
             workbook.close()
             source_notes.append(f"- Read {index_path.name}: {len(benchmark_tables)} index sheets.")
         except Exception as exc:
-            source_notes.append(f"- Index workbook could not be fully read: {type(exc).__name__}: {exc}.")
+            source_notes.append(
+                f"- Index workbook could not be fully read: {type(exc).__name__}: {exc}."
+            )
 
     tri_path = input_dir / "NIFTY LargeMidcap 250 - TRI.xlsx"
     if tri_path.exists():
@@ -257,7 +268,9 @@ def build_local_outputs(input_dir: Path, output_dir: Path) -> dict[str, Path]:
             workbook.close()
             source_notes.append(f"- Read {tri_path.name}: TRI benchmark series.")
         except Exception as exc:
-            source_notes.append(f"- TRI workbook could not be fully read: {type(exc).__name__}: {exc}.")
+            source_notes.append(
+                f"- TRI workbook could not be fully read: {type(exc).__name__}: {exc}."
+            )
 
     if not nav_tables:
         raise RuntimeError(f"No supported NAV worksheets were found under {nav_dir}.")
@@ -266,9 +279,11 @@ def build_local_outputs(input_dir: Path, output_dir: Path) -> dict[str, Path]:
 
     nav = pd.concat(nav_tables, ignore_index=True)
     benchmark = pd.concat(benchmark_tables, ignore_index=True)
-    global_duplicates = nav.duplicated(
-        ["scheme_id", "plan_type", "nav_date"], keep=False
-    ) & nav["scheme_id"].notna() & nav["nav_date"].notna()
+    global_duplicates = (
+        nav.duplicated(["scheme_id", "plan_type", "nav_date"], keep=False)
+        & nav["scheme_id"].notna()
+        & nav["nav_date"].notna()
+    )
     for index in nav.index[global_duplicates]:
         current = nav.at[index, "quality_issue_codes"]
         codes = current.split(";") if current else []
@@ -283,9 +298,7 @@ def build_local_outputs(input_dir: Path, output_dir: Path) -> dict[str, Path]:
     benchmark_output = output_dir / "benchmark_history.csv"
     report_output = output_dir / "data_quality_report.md"
     nav.to_csv(nav_output, index=False, date_format="%Y-%m-%d", encoding="utf-8")
-    benchmark.to_csv(
-        benchmark_output, index=False, date_format="%Y-%m-%d", encoding="utf-8"
-    )
+    benchmark.to_csv(benchmark_output, index=False, date_format="%Y-%m-%d", encoding="utf-8")
 
     nav_valid = int(nav["is_valid"].sum())
     benchmark_valid = int(benchmark["is_valid"].sum())
@@ -300,7 +313,8 @@ def build_local_outputs(input_dir: Path, output_dir: Path) -> dict[str, Path]:
         f"- NAV rows: {len(nav):,}; valid: {nav_valid:,}; flagged: {len(nav) - nav_valid:,}.",
         f"- Fund schemes: {nav['scheme_id'].nunique(dropna=True):,}.",
         f"- NAV date coverage: {_date_span(nav, 'nav_date')}.",
-        f"- Benchmark rows: {len(benchmark):,}; valid: {benchmark_valid:,}; flagged: {len(benchmark) - benchmark_valid:,}.",
+        f"- Benchmark rows: {len(benchmark):,}; valid: {benchmark_valid:,}; "
+        f"flagged: {len(benchmark) - benchmark_valid:,}.",
         f"- Benchmark series: {benchmark['benchmark_id'].nunique(dropna=True):,}.",
         f"- Benchmark date coverage: {_date_span(benchmark, 'date')}.",
         "",
@@ -321,12 +335,17 @@ def build_local_outputs(input_dir: Path, output_dir: Path) -> dict[str, Path]:
             "",
             "## Deferred sources",
             "",
-            "- The wide stock history workbook contains millions of #N/A cells. It needs a streaming conversion and explicit missing-value policy.",
-            "- The two monthly portfolio-holdings workbooks need a separate holdings key and unit review.",
-            "- The merged direct-NAV matrix and 20 Nov multi-section workbook need overlap checks before combining with the NAV output.",
-            "- Index DATA series are labeled as close values; confirm whether each is a price index or total-return index before performance comparisons.",
+            "- The wide stock history workbook contains millions of #N/A cells. It needs a "
+            "streaming conversion and explicit missing-value policy.",
+            "- The two monthly portfolio-holdings workbooks need a separate holdings key "
+            "and unit review.",
+            "- The merged direct-NAV matrix and 20 Nov multi-section workbook need "
+            "overlap checks before combining with the NAV output.",
+            "- INDEX DATA series are labeled as close values; confirm whether each is a "
+            "price index or total-return index before performance comparisons.",
             "",
-            "Flagged rows remain in the CSV with quality_issue_codes and is_valid columns. Do not use flagged rows in model calculations until reviewed.",
+            "Flagged rows remain in the CSV with quality_issue_codes and is_valid columns. "
+            "Do not use flagged rows in model calculations until reviewed.",
         ]
     )
     report_output.write_text("\n".join(report) + "\n", encoding="utf-8")
@@ -349,3 +368,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
