@@ -25,7 +25,7 @@ NAV_COLUMNS = {
 }
 
 
-def parse_excel_date(value: Any) -> pd.Timestamp | pd.NaT:
+def parse_excel_date(value: Any) -> Any:
     """Convert dates, Excel serials, and readable date strings to timestamps."""
     if value is None or pd.isna(value):
         return pd.NaT
@@ -93,7 +93,7 @@ def canonicalize_nav_frame(
     data["nav"] = pd.to_numeric(data["nav"], errors="coerce")
     data["source_file"] = source_file
     data["source_sheet"] = source_sheet
-    data["source_row"] = pd.RangeIndex(start=2, stop=len(data) + 2)
+    data["source_row"] = list(range(2, len(data) + 2))
 
     duplicate = data.duplicated(["scheme_id", "plan_type", "nav_date"], keep=False)
     rules = [
@@ -134,7 +134,7 @@ def canonicalize_index_frame(
     data["close"] = pd.to_numeric(frame[value_column], errors="coerce")
     data["source_file"] = source_file
     data["source_sheet"] = source_sheet
-    data["source_row"] = pd.RangeIndex(start=2, stop=len(data) + 2)
+    data["source_row"] = list(range(2, len(data) + 2))
 
     duplicate = data.duplicated(["benchmark_id", "date"], keep=False)
     rules = [
@@ -266,6 +266,16 @@ def build_local_outputs(input_dir: Path, output_dir: Path) -> dict[str, Path]:
 
     nav = pd.concat(nav_tables, ignore_index=True)
     benchmark = pd.concat(benchmark_tables, ignore_index=True)
+    global_duplicates = nav.duplicated(
+        ["scheme_id", "plan_type", "nav_date"], keep=False
+    ) & nav["scheme_id"].notna() & nav["nav_date"].notna()
+    for index in nav.index[global_duplicates]:
+        current = nav.at[index, "quality_issue_codes"]
+        codes = current.split(";") if current else []
+        if "duplicate_scheme_date" not in codes:
+            codes.append("duplicate_scheme_date")
+        nav.at[index, "quality_issue_codes"] = ";".join(codes)
+        nav.at[index, "is_valid"] = False
     nav["nav_date"] = pd.to_datetime(nav["nav_date"])
     benchmark["date"] = pd.to_datetime(benchmark["date"])
 
