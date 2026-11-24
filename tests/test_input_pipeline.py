@@ -8,7 +8,7 @@ from financial_analytics.input_pipeline import (
 
 
 def test_parse_excel_serial_date() -> None:
-    assert parse_excel_date(41305) == pd.Timestamp("2013-01-01")
+    assert parse_excel_date(41305) == pd.Timestamp("2013-01-31")
 
 
 def test_nav_frame_maps_direct_scheme_and_flags_bad_values() -> None:
@@ -31,8 +31,8 @@ def test_nav_frame_maps_direct_scheme_and_flags_bad_values() -> None:
     )
 
     assert result.loc[0, "scheme_id"] == "INF209K01ZC0"
-    assert result.loc[0, "nav_date"] == pd.Timestamp("2013-01-01")
-    assert result.loc[0, "is_valid"]
+    assert result.loc[0, "nav_date"] == pd.Timestamp("2013-01-31")
+    assert not result.loc[0, "is_valid"]
     assert "non_positive_nav" in result.loc[1, "quality_issue_codes"]
     assert "duplicate_scheme_date" in result.loc[0, "quality_issue_codes"]
 
@@ -52,3 +52,4 @@ def test_index_frame_keeps_ambiguous_series_type_explicit() -> None:
 
     assert result["series_type"].eq("UNCONFIRMED_CLOSE").all()
     assert result["is_valid"].all()
+
