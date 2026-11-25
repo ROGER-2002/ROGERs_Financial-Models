@@ -5,6 +5,7 @@ __pycache__/
 .streamlit/secrets.toml
 .pytest_cache/
 .ruff_cache/
+*.egg-info/
 reports/generated/
 data/
 *.parquet
