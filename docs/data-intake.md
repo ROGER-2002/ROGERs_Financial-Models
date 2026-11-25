@@ -2,12 +2,16 @@
 
 Use this guide to prepare your supplied files before connecting them to the analytics modules. The project does not download, scrape, or invent real market data. Keep original files unchanged and retain their source, license, and as-of details.
 
-## 1. Keep source data out of Git
+## 1. Local folder layout and GitHub boundary
 
-- Place incoming files in the local `data/incoming/` folder (it is ignored by Git).
-- Never commit account details, client holdings, licensed files, credentials, or confidential research.
-- Preserve an untouched copy of each source file. Work from a separate copy during cleanup.
-- Record the provider, file name, extraction time, coverage dates, license, and any transformations.
+Keep all real input, master, and generated output files on your local machine:
+
+- `INPUT/` — original source datasets; keep the provided folder structure and files unchanged.
+- `MASTER/` — stable security, scheme, benchmark, category, and sector mappings used to join sources.
+- `OUTPUT/` — generated reports, model outputs, and backtest results.
+- `logs/` — local script activity, warning, and error records.
+
+These folders are ignored by Git and are not stored in the GitHub repository. Never commit account details, client holdings, licensed files, credentials, or confidential research. Preserve an untouched copy of each source file; perform cleanup and transformations on separate working copies. Record the provider, file name, extraction time, coverage dates, license, and transformations.
 
 ## 2. Preferred first batch
 
@@ -31,6 +35,8 @@ The first validation module accepts a table with:
 | `close` | Yes | Closing value/price |
 | `open`, `high`, `low` | Optional | Daily OHLC values; if all four OHLC columns exist, their relationships are checked |
 | `volume` | Optional | Non-negative traded quantity |
+
+The supplied stock-price workbook is a wide daily matrix: one date column and one close-price column per stock. `#N/A` means a price is unavailable on that date, including dates before the stock's available price history. Preserve it as missing; never convert it to zero or forward-fill it. When calculating returns, do not bridge an internal missing observation without an explicit, documented rule.
 
 The validator also accepts custom identifier and date column names. Map source headers to canonical names in an ingestion adapter after we inspect your files. Prices must be positive. Corporate-action treatment (raw versus adjusted) must be explicit and consistent; the validator does not adjust prices.
 
@@ -56,6 +62,14 @@ Call `validate_price_history(frame)` or `validate_fund_nav(frame)` after mapping
 
 Resolve errors in the source mapping or a documented cleaning step. Keep a reject log and reconcile row counts before promoting records from a raw landing area into a curated dataset.
 
-## 6. Next implementation step
+## 6. Official benchmark reference and index variants
 
-Once the sample files are supplied, document each source's real header names, keys, frequency, coverage, null conventions, units, license, and update schedule. Then build file-specific adapters, master-data joins, reconciliation checks, and Fabric Bronze/Silver/Gold loads around the verified formats. This avoids baking assumptions from a synthetic sample into the production data model.
+Use the [Nifty Indices Historical Data page](https://www.niftyindices.com/reports/historical-data) to distinguish historical price-index data, valuation metrics (P/E, P/B, and dividend yield), and total-return index values. Keep the selected index variant and report type in the data catalog.
+
+- **Nifty Midcap 150** represents 150 companies ranked 101–250 within Nifty 500 ([official index page](https://www.niftyindices.com/indices/equity/broad-based-indices/nifty-midcap-150)).
+- **Nifty LargeMidcap 250** combines 100 Nifty 100 companies and 150 Nifty Midcap 150 companies, with a 50% aggregate weight for each group ([official index page](https://www.niftyindices.com/indices/equity/broad-based-indices/nifty-largemidcap-250)).
+- In the supplied files, `INDEX DATA.xlsx` contains four PRIs, including the Nifty Midcap 150; `NIFTY LargeMidcap 250 - TRI.xlsx` is the separate LargeMidcap 250 total-return series.
+
+## 7. Next implementation step
+
+Continue documenting each source's real header names, keys, frequency, coverage, null conventions, units, license, and update schedule. The current local adapter standardizes supported NAV and benchmark sheets; a streaming adapter for the wide stock matrix and source-specific holdings reconciliation are the next ingestion steps. Build master-data joins and Fabric Bronze/Silver/Gold loads around the verified formats. This avoids baking assumptions from a synthetic sample into the production data model.
