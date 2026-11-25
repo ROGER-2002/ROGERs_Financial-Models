@@ -37,7 +37,7 @@ def test_nav_frame_maps_direct_scheme_and_flags_bad_values() -> None:
     assert "duplicate_scheme_date" in result.loc[0, "quality_issue_codes"]
 
 
-def test_index_frame_keeps_ambiguous_series_type_explicit() -> None:
+def test_index_frame_keeps_price_return_series_type_explicit() -> None:
     source = pd.DataFrame({"time": [36528, 36529], "close": [1291.53, 1335.45]})
 
     result = canonicalize_index_frame(
@@ -45,11 +45,11 @@ def test_index_frame_keeps_ambiguous_series_type_explicit() -> None:
         benchmark_id="NIFTY 500",
         date_column="time",
         value_column="close",
-        series_type="UNCONFIRMED_CLOSE",
+        series_type="PRI",
         source_file="INDEX DATA.xlsx",
         source_sheet="NIFTY 500",
     )
 
-    assert result["series_type"].eq("UNCONFIRMED_CLOSE").all()
+    assert result["series_type"].eq("PRI").all()
     assert result["is_valid"].all()
 
