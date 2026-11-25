@@ -6,11 +6,12 @@ Use this guide to prepare your supplied files before connecting them to the anal
 
 Keep all real input, master, and generated output files on your local machine:
 
-- `Input/` — original source datasets; keep the provided folder structure and files unchanged.
-- `Master/` — stable security, scheme, benchmark, category, and sector mappings used to join sources.
-- `Output/` — generated reports, model outputs, and backtest results.
+- `INPUT/` — original source datasets; keep the provided folder structure and files unchanged.
+- `MASTER/` — stable security, scheme, benchmark, category, and sector mappings used to join sources.
+- `OUTPUT/` — generated reports, model outputs, and backtest results.
+- `logs/` — local script activity, warning, and error records.
 
-These root folders are ignored by Git and are not stored in the GitHub repository. Never commit account details, client holdings, licensed files, credentials, or confidential research. Preserve an untouched copy of each source file; perform cleanup and transformations on separate working copies. Record the provider, file name, extraction time, coverage dates, license, and transformations.
+These folders are ignored by Git and are not stored in the GitHub repository. Never commit account details, client holdings, licensed files, credentials, or confidential research. Preserve an untouched copy of each source file; perform cleanup and transformations on separate working copies. Record the provider, file name, extraction time, coverage dates, license, and transformations.
 
 ## 2. Preferred first batch
 
@@ -34,6 +35,8 @@ The first validation module accepts a table with:
 | `close` | Yes | Closing value/price |
 | `open`, `high`, `low` | Optional | Daily OHLC values; if all four OHLC columns exist, their relationships are checked |
 | `volume` | Optional | Non-negative traded quantity |
+
+The supplied stock-price workbook is a wide daily matrix: one date column and one close-price column per stock. `#N/A` means a price is unavailable on that date, including dates before the stock's available price history. Preserve it as missing; never convert it to zero or forward-fill it. When calculating returns, do not bridge an internal missing observation without an explicit, documented rule.
 
 The validator also accepts custom identifier and date column names. Map source headers to canonical names in an ingestion adapter after we inspect your files. Prices must be positive. Corporate-action treatment (raw versus adjusted) must be explicit and consistent; the validator does not adjust prices.
 
@@ -61,4 +64,4 @@ Resolve errors in the source mapping or a documented cleaning step. Keep a rejec
 
 ## 6. Next implementation step
 
-Once the sample files are supplied, document each source's real header names, keys, frequency, coverage, null conventions, units, license, and update schedule. Then build file-specific adapters, master-data joins, reconciliation checks, and Fabric Bronze/Silver/Gold loads around the verified formats. This avoids baking assumptions from a synthetic sample into the production data model.
+Continue documenting each source's real header names, keys, frequency, coverage, null conventions, units, license, and update schedule. The current local adapter standardizes supported NAV and benchmark sheets; a streaming adapter for the wide stock matrix and source-specific holdings reconciliation are the next ingestion steps. Build master-data joins and Fabric Bronze/Silver/Gold loads around the verified formats. This avoids baking assumptions from a synthetic sample into the production data model.
