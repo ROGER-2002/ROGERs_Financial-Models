@@ -62,6 +62,14 @@ Call `validate_price_history(frame)` or `validate_fund_nav(frame)` after mapping
 
 Resolve errors in the source mapping or a documented cleaning step. Keep a reject log and reconcile row counts before promoting records from a raw landing area into a curated dataset.
 
-## 6. Next implementation step
+## 6. Official benchmark reference and index variants
+
+Use the [Nifty Indices Historical Data page](https://www.niftyindices.com/reports/historical-data) to distinguish historical price-index data, valuation metrics (P/E, P/B, and dividend yield), and total-return index values. Keep the selected index variant and report type in the data catalog.
+
+- **Nifty Midcap 150** represents 150 companies ranked 101–250 within Nifty 500 ([official index page](https://www.niftyindices.com/indices/equity/broad-based-indices/nifty-midcap-150)).
+- **Nifty LargeMidcap 250** combines 100 Nifty 100 companies and 150 Nifty Midcap 150 companies, with a 50% aggregate weight for each group ([official index page](https://www.niftyindices.com/indices/equity/broad-based-indices/nifty-largemidcap-250)).
+- In the supplied files, `INDEX DATA.xlsx` contains four PRIs, including the Nifty Midcap 150; `NIFTY LargeMidcap 250 - TRI.xlsx` is the separate LargeMidcap 250 total-return series.
+
+## 7. Next implementation step
 
 Continue documenting each source's real header names, keys, frequency, coverage, null conventions, units, license, and update schedule. The current local adapter standardizes supported NAV and benchmark sheets; a streaming adapter for the wide stock matrix and source-specific holdings reconciliation are the next ingestion steps. Build master-data joins and Fabric Bronze/Silver/Gold loads around the verified formats. This avoids baking assumptions from a synthetic sample into the production data model.
