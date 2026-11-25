@@ -294,9 +294,10 @@ def build_local_outputs(input_dir: Path, output_dir: Path) -> dict[str, Path]:
             )
 
     if not nav_tables:
-        raise RuntimeError(f"No supported NAV worksheets were found under {nav_dir}.")
+        nav_sources = ", ".join(str(folder) for folder in nav_dirs)
+        raise RuntimeError(f"No supported NAV worksheets were found under {nav_sources}.")
     if not benchmark_tables:
-        raise RuntimeError("No supported benchmark worksheets were found in Input.")
+        raise RuntimeError("No supported benchmark worksheets were found in INPUT.")
 
     nav = pd.concat(nav_tables, ignore_index=True)
     benchmark = pd.concat(benchmark_tables, ignore_index=True)
