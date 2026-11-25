@@ -18,6 +18,8 @@ A practical project for mutual-fund and stock research, portfolio risk analysis,
 | Git and GitHub | Version control, branches, pull requests, and reviews | Used |
 | Streamlit | Interactive local research interface | Used |
 | pandas | Tabular data preparation and analysis | Used |
+| openpyxl | Read supplied Excel workbooks without changing originals | Used |
+| PyArrow | Write and read compressed Parquet data for large time series | Used |
 | NumPy | Numerical calculations | Used |
 | Plotly | Interactive charts and standalone HTML charts | Used |
 | Ruff | Python lint and import checks | Used in CI |
@@ -49,6 +51,7 @@ From PowerShell in the project root:
     .\.venv\Scripts\Activate.ps1
     python -m pip install -r requirements.txt
     streamlit run app.py
+    python -m financial_analytics.stock_price_pipeline --input-file "INPUT/Historical Values 23-01.xlsx" --output-dir "OUTPUT/prepared/stock" --log-dir logs
 
 For development checks:
 
