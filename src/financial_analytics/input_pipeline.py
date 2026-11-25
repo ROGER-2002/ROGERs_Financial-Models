@@ -27,6 +27,13 @@ NAV_COLUMNS = {
     "NAV_Adjusted NAV": "nav",
 }
 
+INDEX_BENCHMARK_IDS = {
+    "LARGECAP 100": "NIFTY 100",
+    "MIDCAP 150": "NIFTY MIDCAP 150",
+    "NIFTY 500": "NIFTY 500",
+    "SMALLCAP 100": "NIFTY SMALLCAP 100",
+}
+
 
 def parse_excel_date(value: Any) -> Any:
     """Convert dates, Excel serials, and readable date strings to timestamps."""
@@ -245,7 +252,9 @@ def build_local_outputs(input_dir: Path, output_dir: Path) -> dict[str, Path]:
                 benchmark_tables.append(
                     canonicalize_index_frame(
                         raw,
-                        benchmark_id=sheet_name,
+                        benchmark_id=INDEX_BENCHMARK_IDS.get(
+                            sheet_name.strip().upper(), sheet_name
+                        ),
                         date_column="time",
                         value_column="close",
                         series_type="PRI",
@@ -363,9 +372,10 @@ def build_local_outputs(input_dir: Path, output_dir: Path) -> dict[str, Path]:
             "and unit review.",
             "- The merged direct-NAV matrix and 20 Nov multi-section workbook need "
             "overlap checks before combining with the NAV output.",
-            "- The four INDEX DATA series are Price Return Indices (PRIs), as confirmed "
-            "by the data owner. The source sheet is named MIDCAP 150 while the supplied "
-            "description says Nifty Midcap 250; confirm that label before reporting it.",
+            "- The four INDEX DATA series are Price Return Indices (PRIs). MIDCAP 150 is "
+            "the Nifty Midcap 150 benchmark (150 constituents). The separate Nifty "
+            "LargeMidcap 250 TRI series combines Nifty 100 and Nifty Midcap 150 "
+            "constituents (250 total, weighted 50% each); it remains a TRI series.",
             "",
             "Flagged rows remain in the CSV with quality_issue_codes and is_valid columns. "
             "Do not use flagged rows in model calculations until reviewed.",
