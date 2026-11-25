@@ -7,12 +7,16 @@ leaves wide stock history and portfolio holdings for a later, source-specific pa
 from __future__ import annotations
 
 import argparse
+import logging
 from datetime import date, datetime
+from logging.handlers import RotatingFileHandler
 from numbers import Real
 from pathlib import Path
 from typing import Any
 
 import pandas as pd
+
+logger = logging.getLogger(__name__)
 
 NAV_COLUMNS = {
     "Scheme Code": "scheme_code",
@@ -180,26 +184,38 @@ def build_local_outputs(input_dir: Path, output_dir: Path) -> dict[str, Path]:
     nav_tables: list[pd.DataFrame] = []
     benchmark_tables: list[pd.DataFrame] = []
     source_notes: list[str] = []
-    nav_dir = input_dir / "FINAL DATA"
-
-    nav_files = sorted(nav_dir.glob("*.xlsx")) if nav_dir.exists() else []
+    nav_dirs = [
+        input_dir / "FINAL DATA",
+        input_dir / "CONSERVATIVE & ALL DEBT FUNDS NAV",
+    ]
+    nav_files = sorted(path for folder in nav_dirs for path in folder.glob("*.xlsx"))
     for path in nav_files:
-        filename = path.stem.upper()
-        if "DIRECT" in filename:
-            plan_type = "Direct"
-        elif "REGULAR" in filename:
-            plan_type = "Regular"
-        else:
-            source_notes.append(f"- Skipped {path.name}: filename does not identify plan type.")
-            continue
-
+        logger.info("Reading NAV workbook: %s", path)
         try:
             workbook = pd.ExcelFile(path, engine="openpyxl")
         except Exception as exc:
+            logger.exception("Could not open NAV workbook %s", path)
             source_notes.append(f"- Skipped {path.name}: could not open workbook ({exc}).")
             continue
 
         for sheet_name in workbook.sheet_names:
+            filename = path.stem.upper()
+            sheet_label = sheet_name.strip().upper()
+            if "DIRECT" in filename:
+                plan_type = "Direct"
+            elif "REGULAR" in filename:
+                plan_type = "Regular"
+            elif sheet_label == "DIRECT":
+                plan_type = "Direct"
+            elif sheet_label == "REGULAR":
+                plan_type = "Regular"
+            else:
+                logger.warning("Skipping sheet without a plan label: %s / %s", path.name, sheet_name)
+                source_notes.append(
+                    f"- Skipped {path.name} / {sheet_name}: plan type not identified."
+                )
+                continue
+
             try:
                 raw = pd.read_excel(workbook, sheet_name=sheet_name)
                 canonical = canonicalize_nav_frame(
@@ -209,10 +225,12 @@ def build_local_outputs(input_dir: Path, output_dir: Path) -> dict[str, Path]:
                     source_sheet=sheet_name,
                 )
                 nav_tables.append(canonical)
+                logger.info("Read %s / %s: %s rows", path.name, sheet_name, len(canonical))
                 source_notes.append(
                     f"- Read {path.name} / {sheet_name}: {len(canonical):,} source rows."
                 )
             except Exception as exc:
+                logger.exception("Could not read NAV sheet %s / %s", path.name, sheet_name)
                 source_notes.append(
                     f"- Skipped {path.name} / {sheet_name}: {type(exc).__name__}: {exc}."
                 )
@@ -230,14 +248,16 @@ def build_local_outputs(input_dir: Path, output_dir: Path) -> dict[str, Path]:
                         benchmark_id=sheet_name,
                         date_column="time",
                         value_column="close",
-                        series_type="UNCONFIRMED_CLOSE",
+                        series_type="PRI",
                         source_file=index_path.name,
                         source_sheet=sheet_name,
                     )
                 )
             workbook.close()
-            source_notes.append(f"- Read {index_path.name}: {len(benchmark_tables)} index sheets.")
+            logger.info("Read %s: %s index sheets", index_path.name, len(workbook.sheet_names))
+            source_notes.append(f"- Read {index_path.name}: {len(workbook.sheet_names)} index sheets.")
         except Exception as exc:
+            logger.exception("Could not read index workbook %s", index_path)
             source_notes.append(
                 f"- Index workbook could not be fully read: {type(exc).__name__}: {exc}."
             )
@@ -268,6 +288,7 @@ def build_local_outputs(input_dir: Path, output_dir: Path) -> dict[str, Path]:
             workbook.close()
             source_notes.append(f"- Read {tri_path.name}: TRI benchmark series.")
         except Exception as exc:
+            logger.exception("Could not read TRI workbook %s", tri_path)
             source_notes.append(
                 f"- TRI workbook could not be fully read: {type(exc).__name__}: {exc}."
             )
@@ -305,7 +326,7 @@ def build_local_outputs(input_dir: Path, output_dir: Path) -> dict[str, Path]:
     report = [
         "# Local input preparation report",
         "",
-        "Generated from local Input workbooks. Original source files were read only.",
+        "Generated from local INPUT workbooks. Original source files were read only.",
         "Only supported long NAV sheets and index-close sheets were standardized in this pass.",
         "",
         "## Summary",
@@ -341,8 +362,9 @@ def build_local_outputs(input_dir: Path, output_dir: Path) -> dict[str, Path]:
             "and unit review.",
             "- The merged direct-NAV matrix and 20 Nov multi-section workbook need "
             "overlap checks before combining with the NAV output.",
-            "- INDEX DATA series are labeled as close values; confirm whether each is a "
-            "price index or total-return index before performance comparisons.",
+            "- The four INDEX DATA series are Price Return Indices (PRIs), as confirmed "
+            "by the data owner. The source sheet is named MIDCAP 150 while the supplied "
+            "description says Nifty Midcap 250; confirm that label before reporting it.",
             "",
             "Flagged rows remain in the CSV with quality_issue_codes and is_valid columns. "
             "Do not use flagged rows in model calculations until reviewed.",
@@ -358,12 +380,34 @@ def build_local_outputs(input_dir: Path, output_dir: Path) -> dict[str, Path]:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--input-dir", type=Path, default=Path("Input"))
-    parser.add_argument("--output-dir", type=Path, default=Path("Output/prepared"))
+    parser.add_argument("--input-dir", type=Path, default=Path("INPUT"))
+    parser.add_argument("--output-dir", type=Path, default=Path("OUTPUT/prepared"))
+    parser.add_argument("--log-dir", type=Path, default=Path("logs"))
     args = parser.parse_args()
-    outputs = build_local_outputs(args.input_dir, args.output_dir)
-    for label, path in outputs.items():
-        print(f"{label}: {path}")
+    args.log_dir.mkdir(parents=True, exist_ok=True)
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+        handlers=[
+            logging.StreamHandler(),
+            RotatingFileHandler(
+                args.log_dir / "financial_analytics.log",
+                maxBytes=5_000_000,
+                backupCount=3,
+                encoding="utf-8",
+            ),
+        ],
+        force=True,
+    )
+    logger.info("Starting local input preparation")
+    try:
+        outputs = build_local_outputs(args.input_dir, args.output_dir)
+        for label, path in outputs.items():
+            logger.info("Created %s at %s", label, path)
+            print(f"{label}: {path}")
+    except Exception:
+        logger.exception("Input preparation failed")
+        raise
 
 
 if __name__ == "__main__":
