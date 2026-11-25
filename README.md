@@ -5,9 +5,9 @@ A practical project for mutual-fund and stock research, portfolio risk analysis,
 ## Current status
 
 - The Streamlit app still runs on clearly labelled synthetic demonstration data.
-- The local Input folder contains user-supplied mutual-fund NAVs, portfolio holdings, stock-price history, and index series.
+- The local INPUT folder contains user-supplied mutual-fund NAVs, portfolio holdings, stock-price history, and index series.
 - Those workbooks are not yet connected to the app or Fabric. Outputs from the demo are not investment research or recommendations.
-- Keep all source, master, and generated data local. Input/, Master/, and Output/ are excluded from GitHub.
+- Keep all source, master, generated data, and runtime logs local. INPUT/, MASTER/, OUTPUT/, and logs/ are excluded from GitHub.
 
 ## Software and libraries
 
@@ -32,14 +32,14 @@ Airflow and Power BI are not part of the current implementation. They can be eva
 
 1. **Set up the workstation.** Install Python 3.11 or newer, Git, and a code editor such as VS Code. Open the Financial Models project folder in VS Code.
 2. **Create a Python environment.** From the project root, create and activate a virtual environment, then install requirements as shown below.
-3. **Land source files locally.** Put original provider files in Input/. Do not rename or edit originals. Keep confidential or licensed files out of GitHub.
+3. **Land source files locally.** Put original provider files in INPUT/. Do not rename or edit originals. Keep confidential or licensed files out of GitHub.
 4. **Inspect each new file first.** Record its provider, sheet names, columns, units, frequency, date coverage, identifier, and known gaps before using it.
 5. **Build the Master mappings.** Map each security to a stable ID, ticker and exchange, and ISIN where available. Map each fund scheme to its scheme code, ISIN, Direct or Regular plan, Growth or IDCW option, category, and benchmark. Keep effective dates when mappings change.
-6. **Standardize and validate.** Convert source headers into agreed column names. Check dates, types, duplicate keys, positive prices and NAVs, and OHLC relationships. Treat spreadsheet errors such as #N/A as missing observations; do not fill them blindly. Keep source rows unchanged and log rejected records.
-7. **Store trusted data.** During local development, keep raw files in Input/ and curated mappings in Master/. The planned Fabric flow is Bronze for raw landed data, Silver for cleaned and validated data, and Gold for model-ready tables. Fabric is not connected in the current prototype.
+6. **Standardize and validate.** Convert source headers into agreed column names. Check dates, types, duplicate keys, positive prices and NAVs, and OHLC relationships. In the stock history matrix, #N/A means a price observation is unavailable for that date, often before the stock's first available history. Keep it missing; never replace it with zero or forward-fill it. Keep source rows unchanged and log rejected records in logs/.
+7. **Store trusted data.** During local development, keep raw files in INPUT/ and curated mappings in MASTER/. Store generated datasets and reports in OUTPUT/, and script activity logs in logs/. The planned Fabric flow is Bronze for raw landed data, Silver for cleaned and validated data, and Gold for model-ready tables. Fabric is not connected in the current prototype.
 8. **Build analytics in stages.** The current app demonstrates peer returns and risk metrics. Next, connect the supplied NAV and benchmark histories, then add holdings exposures and concentration. Add stock valuation, technical indicators, forecasts, and constrained portfolio optimization only after the related data and validation are ready.
-9. **Create reports.** Use Streamlit for interactive filters and tables, Plotly for charts, and HTML export for shareable snapshots. Save generated results in Output/. Show the as-of date, benchmark, units, methodology, and data limitations in every report.
-10. **Review changes safely.** Work on a feature branch, open a pull request, review the diff, and let GitHub Actions run Ruff, pytest, and compile checks before merging. Never add Input/, Master/, or Output/ files to a pull request.
+9. **Create reports.** Use Streamlit for interactive filters and tables, Plotly for charts, and HTML export for shareable snapshots. Save generated results in OUTPUT/. Show the as-of date, benchmark, units, methodology, and data limitations in every report.
+10. **Review changes safely.** Work on a feature branch, open a pull request, review the diff, and let GitHub Actions run Ruff, pytest, and compile checks before merging. Never add INPUT/, MASTER/, OUTPUT/, or logs/ files to a pull request.
 
 ## Run locally
 
@@ -65,12 +65,15 @@ For development checks:
 - configs/ - safe example configuration; never store secrets here.
 - docs/ - architecture, data definitions, intake guide, and roadmap.
 - .github/workflows/ - automated pull-request checks.
-- Input/ - local-only original source workbooks.
-- Master/ - local-only reference and identifier mappings.
-- Output/ - local-only reports and model outputs.
+- INPUT/ - local-only original source workbooks.
+- MASTER/ - local-only reference and identifier mappings.
+- OUTPUT/ - local-only reports and model outputs.
+- logs/ - local-only script activity, warning, and error logs.
 - pyproject.toml - project metadata and the authoritative package/development dependency definitions.
 - requirements.txt - beginner-friendly install entry point.
 
 ## Repository links
 
 See the [implementation roadmap](docs/implementation-roadmap.md), [architecture](docs/architecture.md), [data intake guide](docs/data-intake.md), and [tooling options](docs/tooling-options.md).
+
+
