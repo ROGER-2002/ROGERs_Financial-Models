@@ -1,7 +1,7 @@
 """Prepare canonical local NAV and benchmark CSVs from approved Excel inputs.
 
-The original workbooks are read-only inputs. This first-stage pipeline deliberately
-leaves wide stock history and portfolio holdings for a later, source-specific pass.
+The original workbooks are read-only inputs. This pipeline standardizes NAV and benchmark data;
+stock history is handled by the dedicated streaming stock-price pipeline.
 """
 
 from __future__ import annotations
@@ -366,8 +366,9 @@ def build_local_outputs(input_dir: Path, output_dir: Path) -> dict[str, Path]:
             "",
             "## Deferred sources",
             "",
-            "- The wide stock history workbook contains millions of #N/A cells. It needs a "
-            "streaming conversion and explicit missing-value policy.",
+            "- The wide stock history workbook is handled separately by "
+            "stock_price_pipeline.py. #N/A cells remain missing observations; no zero or "
+            "forward fill is applied.",
             "- The two monthly portfolio-holdings workbooks need a separate holdings key "
             "and unit review.",
             "- The merged direct-NAV matrix and 20 Nov multi-section workbook need "
