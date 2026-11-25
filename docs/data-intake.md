@@ -38,6 +38,8 @@ The first validation module accepts a table with:
 
 The supplied stock-price workbook is a wide daily matrix: one date column and one close-price column per stock. `#N/A` means a price is unavailable on that date, including dates before the stock's available price history. Preserve it as missing; never convert it to zero or forward-fill it. When calculating returns, do not bridge an internal missing observation without an explicit, documented rule.
 
+Run the streaming adapter from the project root with `python -m financial_analytics.stock_price_pipeline --input-file "INPUT/Historical Values 23-01.xlsx" --output-dir OUTPUT/prepared/stock --log-dir logs`. It writes observed closes to compressed Parquet, one coverage row per symbol, a rejects CSV, and a quality report. The wide source file remains unchanged.
+
 The validator also accepts custom identifier and date column names. Map source headers to canonical names in an ingestion adapter after we inspect your files. Prices must be positive. Corporate-action treatment (raw versus adjusted) must be explicit and consistent; the validator does not adjust prices.
 
 ## 4. Canonical mutual-fund NAV
@@ -72,4 +74,4 @@ Use the [Nifty Indices Historical Data page](https://www.niftyindices.com/report
 
 ## 7. Next implementation step
 
-Continue documenting each source's real header names, keys, frequency, coverage, null conventions, units, license, and update schedule. The current local adapter standardizes supported NAV and benchmark sheets; a streaming adapter for the wide stock matrix and source-specific holdings reconciliation are the next ingestion steps. Build master-data joins and Fabric Bronze/Silver/Gold loads around the verified formats. This avoids baking assumptions from a synthetic sample into the production data model.
+Continue documenting each source's real header names, keys, frequency, coverage, null conventions, units, license, and update schedule. The local adapters now standardize supported NAV and benchmark sheets and stream the wide stock matrix into Parquet. Source-specific holdings reconciliation remains a next ingestion step. Build master-data joins and Fabric Bronze/Silver/Gold loads around the verified formats. This avoids baking assumptions from a synthetic sample into the production data model.
