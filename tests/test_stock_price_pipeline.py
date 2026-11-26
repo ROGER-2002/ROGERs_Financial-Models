@@ -36,4 +36,3 @@ def test_streams_observed_prices_and_tracks_missing_coverage(tmp_path) -> None:
     report = outputs["report"].read_text(encoding="utf-8")
     assert "Expected `#N/A` cells preserved as missing: 2." in report
     assert "Explicit blank cells: 1." in report
-

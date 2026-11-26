@@ -350,7 +350,7 @@ def main() -> None:
     parser.add_argument(
         "--input-file",
         type=Path,
-        default=Path("INPUT/Historical Values 23-01.xlsx"),
+        default=Path("INPUT/STOCKS/Historical Values 23-01.xlsx"),
     )
     parser.add_argument("--output-dir", type=Path, default=Path("OUTPUT/prepared/stock"))
     parser.add_argument("--log-dir", type=Path, default=Path("logs"))
@@ -387,4 +387,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

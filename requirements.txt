@@ -1,0 +1,34 @@
+# Financial Analytics setup and dependencies
+#
+# SOFTWARE / APPLICATIONS (install outside pip):
+# - Python 3.11+: application runtime.
+# - VS Code: recommended editor.
+# - Git and GitHub: source control and pull-request collaboration.
+# - Microsoft Fabric: planned data platform; it is not connected to the local demo.
+# - Excel: optional application for inspecting the supplied .xlsx workbooks.
+# - GitHub Actions: hosted CI checks for pull requests.
+#
+# STEP-BY-STEP INSTALL (run from the project root):
+# 1. python -m venv .venv
+# 2. Activate it:
+#      PowerShell: .\.venv\Scripts\Activate.ps1
+#      macOS/Linux: source .venv/bin/activate
+# 3. python -m pip install -r requirements.txt
+# 4. streamlit run app.py
+#
+# Runtime Python libraries (versions are declared in pyproject.toml):
+# numpy     - numeric arrays and calculations
+# pandas    - tabular data manipulation
+# plotly    - interactive charts and HTML chart export
+# streamlit - interactive application interface
+# openpyxl  - read the supplied Excel source workbooks
+# pyarrow   - write large stock histories as compressed Parquet
+#
+# Editable project install also installs the runtime dependencies above.
+-e .
+#
+# Developer tools (not needed to run the app):
+# Install with: python -m pip install -e ".[dev]"
+# This installs Ruff (linting) and pytest (automated tests), as configured in pyproject.toml.
+#
+# Microsoft Fabric, VS Code, Excel, Git, GitHub, and GitHub Actions are not pip packages.

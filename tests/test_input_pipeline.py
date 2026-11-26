@@ -52,4 +52,3 @@ def test_index_frame_keeps_price_return_series_type_explicit() -> None:
 
     assert result["series_type"].eq("PRI").all()
     assert result["is_valid"].all()
-

@@ -1,7 +1,7 @@
 """Prepare canonical local NAV and benchmark CSVs from approved Excel inputs.
 
-The original workbooks are read-only inputs. This pipeline standardizes NAV and benchmark data;
-stock history is handled by the dedicated streaming stock-price pipeline.
+The original workbooks are read-only inputs. This first-stage pipeline deliberately
+leaves wide stock history and portfolio holdings for a later, source-specific pass.
 """
 
 from __future__ import annotations
@@ -192,10 +192,13 @@ def build_local_outputs(input_dir: Path, output_dir: Path) -> dict[str, Path]:
     benchmark_tables: list[pd.DataFrame] = []
     source_notes: list[str] = []
     nav_dirs = [
+        input_dir / "FUNDS",
         input_dir / "FINAL DATA",
         input_dir / "CONSERVATIVE & ALL DEBT FUNDS NAV",
     ]
-    nav_files = sorted(path for folder in nav_dirs for path in folder.glob("*.xlsx"))
+    nav_files = sorted(
+        {path for folder in nav_dirs if folder.exists() for path in folder.rglob("*.xlsx")}
+    )
     for path in nav_files:
         logger.info("Reading NAV workbook: %s", path)
         try:
@@ -217,7 +220,9 @@ def build_local_outputs(input_dir: Path, output_dir: Path) -> dict[str, Path]:
             elif sheet_label == "REGULAR":
                 plan_type = "Regular"
             else:
-                logger.warning("Skipping sheet without a plan label: %s / %s", path.name, sheet_name)
+                logger.warning(
+                    "Skipping sheet without a plan label: %s / %s", path.name, sheet_name
+                )
                 source_notes.append(
                     f"- Skipped {path.name} / {sheet_name}: plan type not identified."
                 )
@@ -243,7 +248,14 @@ def build_local_outputs(input_dir: Path, output_dir: Path) -> dict[str, Path]:
                 )
         workbook.close()
 
-    index_path = input_dir / "INDEX DATA.xlsx"
+    index_path = next(
+        (
+            path
+            for path in (input_dir / "INDEXES" / "INDEX DATA.xlsx", input_dir / "INDEX DATA.xlsx")
+            if path.exists()
+        ),
+        input_dir / "INDEXES" / "INDEX DATA.xlsx",
+    )
     if index_path.exists():
         try:
             workbook = pd.ExcelFile(index_path, engine="openpyxl")
@@ -264,38 +276,68 @@ def build_local_outputs(input_dir: Path, output_dir: Path) -> dict[str, Path]:
                 )
             workbook.close()
             logger.info("Read %s: %s index sheets", index_path.name, len(workbook.sheet_names))
-            source_notes.append(f"- Read {index_path.name}: {len(workbook.sheet_names)} index sheets.")
+            source_notes.append(
+                f"- Read {index_path.name}: {len(workbook.sheet_names)} index sheets."
+            )
         except Exception as exc:
             logger.exception("Could not read index workbook %s", index_path)
             source_notes.append(
                 f"- Index workbook could not be fully read: {type(exc).__name__}: {exc}."
             )
 
-    tri_path = input_dir / "NIFTY LargeMidcap 250 - TRI.xlsx"
-    if tri_path.exists():
+    tri_paths = sorted(
+        {
+            path
+            for folder in (input_dir / "INDEXES", input_dir)
+            if folder.exists()
+            for path in folder.glob("*.xlsx")
+            if "TRI" in path.stem.upper()
+        }
+    )
+    for tri_path in tri_paths:
         try:
             workbook = pd.ExcelFile(tri_path, engine="openpyxl")
             for sheet_name in workbook.sheet_names:
                 raw = pd.read_excel(workbook, sheet_name=sheet_name)
-                name_column = "Index Name" if "Index Name" in raw.columns else None
-                benchmark_id = (
-                    str(raw[name_column].dropna().iloc[0])
+                name_column = next(
+                    (column for column in ("IndexName", "Index Name") if column in raw.columns),
+                    None,
+                )
+                value_column = next(
+                    (
+                        column
+                        for column in ("Total Returns Index", "Close Price")
+                        if column in raw.columns
+                    ),
+                    None,
+                )
+                if "Date" not in raw.columns or value_column is None:
+                    raise ValueError(
+                        "TRI sheet must contain Date and either Total Returns Index or Close Price."
+                    )
+                source_name = (
+                    str(raw[name_column].dropna().iloc[0]).strip()
                     if name_column and raw[name_column].notna().any()
-                    else "NIFTY LargeMidcap 250 TRI"
+                    else tri_path.stem
+                )
+                benchmark_id = (
+                    source_name if source_name.upper().endswith("TRI") else f"{source_name} TRI"
                 )
                 benchmark_tables.append(
                     canonicalize_index_frame(
                         raw,
                         benchmark_id=benchmark_id,
                         date_column="Date",
-                        value_column="Close Price",
+                        value_column=value_column,
                         series_type="TRI",
                         source_file=tri_path.name,
                         source_sheet=sheet_name,
                     )
                 )
             workbook.close()
-            source_notes.append(f"- Read {tri_path.name}: TRI benchmark series.")
+            source_notes.append(
+                f"- Read {tri_path.name}: {len(workbook.sheet_names)} TRI benchmark sheet(s)."
+            )
         except Exception as exc:
             logger.exception("Could not read TRI workbook %s", tri_path)
             source_notes.append(
@@ -366,9 +408,8 @@ def build_local_outputs(input_dir: Path, output_dir: Path) -> dict[str, Path]:
             "",
             "## Deferred sources",
             "",
-            "- The wide stock history workbook is handled separately by "
-            "stock_price_pipeline.py. #N/A cells remain missing observations; no zero or "
-            "forward fill is applied.",
+            "- Stock prices are prepared separately by stock_price_pipeline.py as compressed "
+            "Parquet with per-symbol coverage; #N/A cells remain missing.",
             "- The two monthly portfolio-holdings workbooks need a separate holdings key "
             "and unit review.",
             "- The merged direct-NAV matrix and 20 Nov multi-section workbook need "
@@ -377,6 +418,8 @@ def build_local_outputs(input_dir: Path, output_dir: Path) -> dict[str, Path]:
             "the Nifty Midcap 150 benchmark (150 constituents). The separate Nifty "
             "LargeMidcap 250 TRI series combines Nifty 100 and Nifty Midcap 150 "
             "constituents (250 total, weighted 50% each); it remains a TRI series.",
+            "- Daily TRI workbooks in INPUT/INDEXES are standardized separately from the "
+            "PRI series. Keep each benchmark ID and return-series type distinct.",
             "",
             "Flagged rows remain in the CSV with quality_issue_codes and is_valid columns. "
             "Do not use flagged rows in model calculations until reviewed.",
@@ -424,4 +467,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
