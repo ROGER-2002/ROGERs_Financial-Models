@@ -12,6 +12,8 @@ dependencies = [
   "pandas>=2.1",
   "plotly>=5.20",
   "streamlit>=1.36",
+  "openpyxl>=3.1",
+  "pyarrow>=12",
 ]
 
 [project.optional-dependencies]
@@ -26,3 +28,6 @@ target-version = "py311"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["financial_analytics"]

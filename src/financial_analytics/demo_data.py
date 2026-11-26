@@ -5,7 +5,6 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-
 FUND_CATALOG = pd.DataFrame(
     [
         ("SIM-AH-01", "Illustrative Hybrid A", "Aggressive Hybrid Fund", 0.145, 0.185),
@@ -46,8 +45,14 @@ def load_demo_data(seed: int = 23) -> tuple[pd.DataFrame, pd.DataFrame]:
         returns = weekly_drift + 0.55 * category_return + idiosyncratic
         nav = 100 * np.cumprod(1 + returns)
         fund_rows.extend(
-            {"date": date, "fund_id": row.fund_id, "fund_name": row.fund_name,
-             "category": row.category, "return": float(ret), "nav": float(value)}
+            {
+                "date": date,
+                "fund_id": row.fund_id,
+                "fund_name": row.fund_name,
+                "category": row.category,
+                "return": float(ret),
+                "nav": float(value),
+            }
             for date, ret, value in zip(dates, returns, nav, strict=True)
         )
     return pd.DataFrame(fund_rows), pd.DataFrame(benchmark_rows)
