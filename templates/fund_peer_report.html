@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>__PAGE_TITLE__</title>
+  <style>
+    :root {
+      font-family: Inter, "Segoe UI", Arial, sans-serif;
+      color: #172b36;
+      background: #f3f7f8;
+      --ink: #172b36; --muted: #607582; --line: #dce6e9;
+      --brand: #087f70; --brand-dark: #075f57; --card: #fff;
+      --soft: #e9f4f2; --shadow: 0 8px 28px #1839450d;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 92px; }
+    body { margin: 0; }
+    main { max-width: 1600px; margin: auto; padding: 30px 38px 48px; }
+    header { padding: 12px 0 24px; }
+    .eyebrow { color: var(--brand); font-size: 11px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+    h1 { font-size: clamp(25px, 3vw, 38px); letter-spacing: -.035em; margin: 7px 0; color: var(--ink); }
+    header p, .muted { margin: 5px 0; color: var(--muted); font-size: 14px; line-height: 1.55; }
+    .metadata { display: flex; gap: 9px; flex-wrap: wrap; margin-top: 15px; }
+    .metadata span { background: #eaf0f2; border: 1px solid var(--line); border-radius: 20px; padding: 7px 11px; font-size: 12px; color: #435d69; }
+    .toolbar { position: sticky; top: 0; z-index: 10; display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 0; background: #f3f7f8ed; backdrop-filter: blur(12px); border-block: 1px solid var(--line); }
+    .nav, .actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .nav a, button { border: 1px solid var(--line); border-radius: 8px; padding: 8px 11px; background: #fff; color: #29424e; text-decoration: none; font: inherit; font-size: 12px; cursor: pointer; }
+    .nav a:hover, button:hover { border-color: var(--brand); color: var(--brand-dark); }
+    button.primary { background: var(--brand); border-color: var(--brand); color: #fff; font-weight: 700; }
+    .metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 13px; padding: 20px 0 24px; }
+    .metric { display: grid; align-content: start; gap: 7px; min-height: 125px; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px; box-shadow: var(--shadow); }
+    .metric span { font-size: 12px; font-weight: 650; color: var(--muted); }
+    .metric strong { font-size: 25px; color: var(--brand-dark); line-height: 1.15; font-variant-numeric: tabular-nums; }
+    .metric small { font-size: 11px; color: #71838c; line-height: 1.45; }
+    .note { background: #fff8e9; border: 1px solid #f1dfb7; border-left: 4px solid #d5ad57; border-radius: 8px; padding: 12px 15px; color: #59675f; font-size: 13px; line-height: 1.55; }
+    .section-heading { display: flex; justify-content: space-between; align-items: end; gap: 12px; margin: 26px 0 12px; }
+    .section-heading h2 { margin: 0; font-size: 20px; color: var(--ink); }
+    .chart-section { background: var(--card); border: 1px solid var(--line); border-radius: 13px; margin: 14px 0; padding: 18px 20px; box-shadow: var(--shadow); overflow: hidden; }
+    .chart-section h2 { font-size: 17px; margin: 0 0 4px; color: var(--ink); }
+    .chart-meta { font-size: 12px; color: #71838c; margin: 0 0 10px; }
+    .table-tools { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 11px 13px; background: #fff; border: 1px solid var(--line); border-bottom: 0; border-radius: 11px 11px 0 0; }
+    #tableSearch { width: min(380px, 100%); border: 1px solid var(--line); border-radius: 8px; padding: 9px 11px; font: inherit; font-size: 13px; }
+    .table-wrap { background: white; border: 1px solid var(--line); border-radius: 0 0 11px 11px; overflow: auto; }
+    table.peer-table { border-collapse: separate; border-spacing: 0; min-width: 1350px; width: 100%; font-size: 12px; }
+    .peer-table th, .peer-table td { padding: 10px 11px; border-bottom: 1px solid #e8eeea; text-align: right; white-space: nowrap; }
+    .peer-table th { position: sticky; top: 0; background: #eaf3f2; color: #34535b; font-weight: 700; }
+    .peer-table tbody tr:hover td { background: #eff8f6; }
+    .peer-table td:first-child, .peer-table th:first-child { text-align: left; position: sticky; left: 0; background: #fff; z-index: 1; }
+    .peer-table th:first-child { background: #eaf3f2; z-index: 2; }
+    .peer-table tr:nth-child(even) td { background: #fafcfc; }
+    .peer-table tr:nth-child(even):hover td { background: #eff8f6; }
+    .peer-table tr:nth-child(even) td:first-child { background: #fafcfc; }
+    details { background: white; border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; margin: 16px 0; color: #526975; font-size: 13px; line-height: 1.6; }
+    summary { cursor: pointer; font-weight: 700; color: #34535b; }
+    footer { border-top: 1px solid var(--line); padding: 18px 0 4px; margin-top: 26px; font-size: 11px; color: #71838c; line-height: 1.5; }
+    @media (max-width: 900px) { main { padding: 22px 18px 34px; } .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); } .toolbar { align-items: flex-start; flex-direction: column; } }
+    @media (max-width: 520px) { .metrics { grid-template-columns: 1fr; } .nav a { padding: 7px 8px; } .section-heading { align-items: flex-start; flex-direction: column; } }
+    @media print {
+      body { background: #fff; } main { max-width: none; padding: 0; }
+      .toolbar, .table-tools, button { display: none !important; }
+      .metrics { grid-template-columns: repeat(3, 1fr); }
+      .metric, .chart-section, .table-wrap { box-shadow: none; break-inside: avoid; }
+      .chart-section { page-break-inside: avoid; }
+      .table-wrap { overflow: visible; } table.peer-table { min-width: 0; font-size: 8px; }
+      .peer-table th, .peer-table td { padding: 5px 4px; white-space: normal; }
+      .peer-table td:first-child, .peer-table th:first-child { position: static; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header id="top">
+      <div class="eyebrow">Financial Analytics · Fund Research</div>
+      <h1>__CATEGORY__ Peer Comparison</h1>
+      <p><strong>__FOCUS_FUND__</strong> · __PLAN__ plan</p>
+      <div class="metadata">
+        <span>As of __AS_OF__</span><span>__PERIOD__-year analysis period</span>
+        <span>__PEER_COUNT__ funds in this peer group</span><span>__BENCHMARK__</span>
+      </div>
+    </header>
+    <nav class="toolbar" aria-label="Report navigation">
+      <div class="nav"><a href="#summary">Summary</a><a href="#charts">Charts</a><a href="#peer-table">Peer table</a><a href="#methodology">Methodology</a></div>
+      <div class="actions"><button id="downloadCsv" type="button">Download table CSV</button><button class="primary" type="button" onclick="window.print()">Print / Save PDF</button></div>
+    </nav>
+    <section id="summary" class="metrics" aria-label="Selected fund metrics">__METRIC_CARDS__</section>
+    <p class="note">__BENCHMARK_NOTE__ Returns use supplied Adjusted NAV observations and are historical, not forecasts.</p>
+    <div id="charts">
+      <div class="section-heading"><h2>Visual analysis</h2><span class="muted">Interactive charts · hover for fund-level detail</span></div>
+      __CHART_SECTIONS__
+    </div>
+    <details id="methodology">
+      <summary>Metric availability and interpretation</summary>
+      <p>Expense ratio is not in the supplied scheme-level data. Portfolio turnover requires transaction flows and average net assets; holdings snapshots alone do not provide the official rate. Forward Ratio needs an agreed definition and forward estimates. Benchmark metrics need a selected benchmark and overlapping observations. Period metrics and ranks can be unavailable where a fund lacks sufficient NAV history for the selected window. The app shows these fields as N/A rather than estimating them.</p>
+      <p>Returns and risk measures in this report use monthly observations. Check the methodology notes in the project documentation for calculation conventions, coverage rules, and limitations.</p>
+    </details>
+    <div class="section-heading" id="peer-table"><h2>Fund-by-fund metrics</h2><span class="muted">Search by fund name or any visible metric</span></div>
+    <div class="table-tools"><input id="tableSearch" type="search" placeholder="Search this peer group…" aria-label="Search peer table"><span id="rowCount" class="muted"></span></div>
+    <div class="table-wrap">__METRICS_TABLE__</div>
+    <footer>Generated by Financial Analytics · __CATEGORY__ · __PLAN__ · __AS_OF__. Verify data coverage and benchmark suitability before using these measures. <a href="#top">Back to top ↑</a></footer>
+  </main>
+  <script>
+    (() => {
+      const table = document.querySelector("table.peer-table");
+      if (!table) return;
+      const rows = [...table.querySelectorAll("tbody tr")];
+      const search = document.getElementById("tableSearch");
+      const counter = document.getElementById("rowCount");
+      const applyFilter = () => {
+        const term = search.value.trim().toLocaleLowerCase();
+        let visible = 0;
+        rows.forEach(row => {
+          const match = row.innerText.toLocaleLowerCase().includes(term);
+          row.hidden = !match;
+          if (match) visible += 1;
+        });
+        counter.textContent = `${visible} of ${rows.length} funds`;
+      };
+      search.addEventListener("input", applyFilter);
+      applyFilter();
+      document.getElementById("downloadCsv").addEventListener("click", () => {
+        const csv = [...table.rows].map(row => [...row.cells].map(cell =>
+          '"' + cell.innerText.replaceAll('"', '""').replaceAll(/\s+/g, ' ').trim() + '"'
+        ).join(",")).join("\r\n");
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(new Blob(["\ufeff" + csv], {type: "text/csv;charset=utf-8"}));
+        link.download = "fund-peer-metrics.csv";
+        link.click();
+        URL.revokeObjectURL(link.href);
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -21,6 +21,8 @@
 # pandas    - tabular data manipulation
 # plotly    - interactive charts and HTML chart export
 # streamlit - interactive application interface
+# openpyxl  - read the supplied Excel source workbooks
+# pyarrow   - write large stock histories as compressed Parquet
 #
 # Editable project install also installs the runtime dependencies above.
 -e .
