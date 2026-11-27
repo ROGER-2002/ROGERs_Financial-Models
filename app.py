@@ -244,42 +244,33 @@ def peer_bar(metric: str, title: str, *, percent: bool = False) -> go.Figure:
     return fig
 
 
-left, right = st.columns(2)
-with left:
-    fig = peer_bar("period_return", f"Return over {period_years} year(s)", percent=True)
-    st.plotly_chart(
-        fig,
-        width="stretch",
-        alt="Selected fund return compared with funds in its category and plan group.",
-    )
-with right:
-    risk_scatter = px.scatter(
-        metrics,
-        x="annualized_volatility",
-        y="period_return",
-        color=metrics.scheme_id.eq(selected_id).map({True: "Selected fund", False: "Peer"}),
-        size="observations",
-        hover_name="scheme_name",
-        hover_data=["sharpe_ratio", "sortino_ratio", "max_drawdown"],
-        color_discrete_map={"Selected fund": "#087f70", "Peer": "#aab7c4"},
-        title="Return versus annualized volatility",
-    )
-    risk_scatter.update_layout(
-        height=430, xaxis_tickformat=".0%", yaxis_tickformat=".0%", legend_title_text=""
-    )
-    st.plotly_chart(
-        risk_scatter, width="stretch", alt="Risk and return scatter plot for peer funds."
-    )
+st.markdown("### Peer comparison")
+fig = peer_bar("period_return", f"Return over {period_years} year(s)", percent=True)
+st.plotly_chart(
+    fig,
+    width="stretch",
+    alt="Selected fund return compared with funds in its category and plan group.",
+)
+risk_scatter = px.scatter(
+    metrics,
+    x="annualized_volatility",
+    y="period_return",
+    color=metrics.scheme_id.eq(selected_id).map({True: "Selected fund", False: "Peer"}),
+    size="observations",
+    hover_name="scheme_name",
+    hover_data=["sharpe_ratio", "sortino_ratio", "max_drawdown"],
+    color_discrete_map={"Selected fund": "#087f70", "Peer": "#aab7c4"},
+    title="Return versus annualized volatility",
+)
+risk_scatter.update_layout(
+    height=430, xaxis_tickformat=".0%", yaxis_tickformat=".0%", legend_title_text=""
+)
+st.plotly_chart(
+    risk_scatter, width="stretch", alt="Risk and return scatter plot for peer funds."
+)
 
 st.subheader("Fund performance path")
-st.caption("NAV is normalized to 100 at the first available observation in the selected window; drawdown is measured from the running NAV peak.")
-window_start = pd.Timestamp(as_of) - pd.DateOffset(years=period_years)
-focus_nav = subset.loc[
-    subset.scheme_id.eq(selected_id)
-    & subset.nav_date.le(pd.Timestamp(as_of))
-    & subset.nav_date.ge(window_start)
-].sort_values("nav_date")
-plot_cols = st.columns(2)
+st.caption("NAV is rebased to 100 from the first observation in the selected window. Drawdown is measured from the running NAV peak.")
 if len(focus_nav) >= 2:
     normalized = focus_nav.assign(value=focus_nav.nav / focus_nav.nav.iloc[0] * 100)
     growth_fig = px.line(
@@ -290,14 +281,15 @@ if len(focus_nav) >= 2:
         labels={"nav_date": "Date", "value": "Value of 100"},
     )
     growth_fig.update_traces(line_color="#087f70")
-    growth_fig.update_layout(height=390)
-    plot_cols[0].plotly_chart(
+    growth_fig.update_layout(height=430)
+    st.plotly_chart(
         growth_fig,
         width="stretch",
         alt="Selected fund NAV rebased to 100 at the start of the period.",
     )
 else:
-    plot_cols[0].info("Not enough observations for the NAV chart.")
+    st.info("Not enough observations for the NAV chart.")
+
 focus_dd = drawdowns.loc[drawdowns.scheme_id.eq(selected_id)]
 if not focus_dd.empty:
     dd_fig = px.area(
@@ -308,12 +300,12 @@ if not focus_dd.empty:
         labels={"date": "Date", "drawdown": "Drawdown"},
     )
     dd_fig.update_traces(line_color="#c44e52", fillcolor="rgba(196,78,82,0.22)")
-    dd_fig.update_layout(height=390, yaxis_tickformat=".0%")
-    plot_cols[1].plotly_chart(
+    dd_fig.update_layout(height=430, yaxis_tickformat=".0%")
+    st.plotly_chart(
         dd_fig, width="stretch", alt="Selected fund drawdown from its prior NAV peak."
     )
 else:
-    plot_cols[1].info("Drawdown path unavailable.")
+    st.info("Drawdown path unavailable.")
 
 if benchmark_id:
     st.subheader("Benchmark-relative view")
