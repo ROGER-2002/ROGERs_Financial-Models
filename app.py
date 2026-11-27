@@ -14,8 +14,32 @@ from financial_analytics.fund_metrics import calculate_fund_peer_metrics
 from financial_analytics.peer_performance import load_peer_data, peer_growth_history
 
 st.set_page_config(page_title="Financial Analytics | Fund Research", page_icon="📈", layout="wide")
-st.title("Mutual fund performance and risk")
-st.caption("Fund-level analytics compared with funds in the same category and plan group.")
+st.markdown(
+    """
+    <style>
+      .block-container {max-width: 1680px; padding-top: 1.5rem; padding-bottom: 3rem;}
+      .hero {padding: 1.35rem 1.55rem; border: 1px solid #dce8e8; border-radius: 18px;
+        background: linear-gradient(115deg, #f0f8f7 0%, #ffffff 62%, #eef4f7 100%);
+        margin-bottom: 1.25rem;}
+      .hero-kicker {font-size:.72rem; letter-spacing:.12em; text-transform:uppercase;
+        font-weight:750; color:#087f70; margin-bottom:.35rem;}
+      .hero h1 {font-size: clamp(1.65rem, 3vw, 2.35rem); margin:.1rem 0 .35rem;
+        color:#18313b; letter-spacing:-.035em;}
+      .hero p {color:#607582; margin:0; font-size:.98rem;}
+      div[data-testid="stMetric"] {background:#fff; border:1px solid #dce6e9;
+        border-radius:13px; padding:14px 15px; box-shadow:0 5px 18px #1839450a;}
+      div[data-testid="stMetric"] label {color:#607582;}
+      h2 {letter-spacing:-.02em;}
+    </style>
+    <section class="hero">
+      <div class="hero-kicker">Financial Analytics · Mutual Fund Research</div>
+      <h1>Performance, peers &amp; portfolio risk</h1>
+      <p>Explore a fund alongside its category and plan peers, with transparent assumptions and interactive analysis.</p>
+    </section>
+    """,
+    unsafe_allow_html=True,
+)
+st.caption("Research view · results depend on NAV coverage, selected period, and benchmark alignment.")
 
 NAV_PATH = Path("OUTPUT/prepared/fund_nav_history.csv")
 MASTER_PATH = Path("MASTER/FUND_PEER_MASTER.csv")
@@ -102,6 +126,11 @@ st.caption(
     f"{category} · {plan} · {period_years}-year window ending {latest_date} · "
     f"{len(metrics)} funds in peer group"
 )
+context = st.columns(3)
+context[0].metric("Peer group", f"{len(metrics)} funds", help="Only funds in the selected category and plan are included.")
+context[1].metric("Analysis window", f"{period_years} years", help=f"Selected end date: {latest_date}")
+context[2].metric("Benchmark status", "Selected" if benchmark_id else "Not selected",
+                  help=benchmark_id or "Benchmark-relative statistics need a manually selected benchmark.")
 if benchmark_id:
     series_type = str(focus.benchmark_type)
     st.info(
@@ -140,7 +169,8 @@ metric_specs = [
     ("Forward Ratio", "forward_ratio", ".2f", "Definition and forward inputs needed"),
 ]
 
-st.subheader("Fund metric cards")
+st.subheader("Key metrics")
+st.caption("Cards show the selected fund. Peer ranks are within the chosen category and plan; 1 is best.")
 for offset in range(0, len(metric_specs), 4):
     cards = st.columns(4)
     for card, (label, key, fmt, description) in zip(
@@ -241,7 +271,8 @@ with right:
         risk_scatter, width="stretch", alt="Risk and return scatter plot for peer funds."
     )
 
-st.subheader("NAV growth and drawdown")
+st.subheader("Fund performance path")
+st.caption("NAV is normalized to 100 at the first available observation in the selected window; drawdown is measured from the running NAV peak.")
 window_start = pd.Timestamp(as_of) - pd.DateOffset(years=period_years)
 focus_nav = subset.loc[
     subset.scheme_id.eq(selected_id)
@@ -332,6 +363,7 @@ if benchmark_id:
             st.info("Fund and benchmark do not have enough overlapping monthly observations.")
 
 st.subheader("Peer metric heatmap")
+st.caption("Compare funds across return and risk measures. Blank cells mean the required inputs or history are unavailable.")
 heat_cols = [
     ("period_return", "Period Return"),
     ("sharpe_ratio", "Sharpe"),
@@ -360,6 +392,7 @@ else:
     st.info("Heatmap unavailable for this peer group and benchmark selection.")
 
 st.subheader("Peer metrics table")
+st.caption("Use the download button below to retain the underlying peer metrics as CSV.")
 display_cols = [
     "scheme_name",
     "period_return",
